@@ -5,13 +5,13 @@ import ChatPage from "./pages/ChatPage";
 
 function App() {
   return (
-    <>
+    <div className="min-h-screen">
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/chat" element={<ChatPage />} />
       </Routes>
-    </>
+    </div>
   );
 }
 
