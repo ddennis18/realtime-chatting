@@ -4,12 +4,15 @@ import "./index.css";
 import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import UserProvider from "./context/UserContext.jsx";
+import ChatProvider from "./context/ChatContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <UserProvider>
-        <App />
+        <ChatProvider>
+          <App />
+        </ChatProvider>
       </UserProvider>
     </BrowserRouter>
   </StrictMode>
