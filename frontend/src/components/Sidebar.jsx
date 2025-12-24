@@ -1,6 +1,5 @@
 import { SidebarIcon } from "lucide-react";
 import { useUser } from "../context/UserContext";
-import { useEffect } from "react";
 import GroupCard from "./GroupCard";
 
 const Sidebar = () => {
