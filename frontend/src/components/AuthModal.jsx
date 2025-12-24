@@ -1,7 +1,33 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useUser } from "../context/UserContext";
+import { loginUser, registerUser } from "../services/userService.js";
 
 const AuthModal = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [username, setUsername] = useState("");
+  const [fullname, setFullname] = useState("");
+  const { user, setUser } = useUser();
+
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (!isLogin) {
+        const userData = await registerUser({ username, fullname });
+        if (!userData) {
+          return;
+        }
+        setUser(userData);
+      } else {
+        const userData = await loginUser({ username });
+        if (!userData) {
+          return;
+        }
+        console.log(userData);
+        setUser(userData);
+      }
+    },
+    [isLogin, username, fullname]
+  );
 
   return (
     <div className="fixed inset-0 w-screen h-screen flex items-center justify-center backdrop-blur-md">
@@ -12,14 +38,15 @@ const AuthModal = () => {
         <form action="" className="flex flex-col gap-1">
           {!isLogin && (
             <>
-              <label htmlFor="username" className="font-semibold">
+              <label htmlFor="fullname" className="font-semibold">
                 {" "}
                 Enter Your Full Name{" "}
               </label>
               <input
                 type="text"
-                name="username"
-                id="username"
+                name="fullname"
+                id="fullname"
+                onChange={(e) => setFullname(e.target.value)}
                 placeholder="eg: Johndoe"
                 className="border-2 border-indigo-600 rounded-full px-2 py-1"
               />
@@ -36,6 +63,7 @@ const AuthModal = () => {
             type="text"
             name="username"
             id="username"
+            onChange={(e) => setUsername(e.target.value)}
             placeholder="@"
             className="border-2 border-indigo-600 rounded-full px-2 py-1"
           />
@@ -50,6 +78,7 @@ const AuthModal = () => {
             <button
               type="submit"
               className="bg-indigo-700 hover:bg-indigo-600/90  font-semibold text-white py-1 px-2 rounded-full"
+              onClick={handleSubmit}
             >
               {isLogin ? "Login" : "Register"}
             </button>
