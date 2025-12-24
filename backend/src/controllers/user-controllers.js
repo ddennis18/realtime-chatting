@@ -1,4 +1,4 @@
-import { createUser } from "../services/user-services.js";
+import { createUser, getUser } from "../services/user-services.js";
 
 export async function createUserController(req, res, next) {
   try {
@@ -11,8 +11,25 @@ export async function createUserController(req, res, next) {
     const newUser = result.data;
 
     res
-      .status(200)
+      .status(201)
       .send({ message: "User Created Successfuly", user: newUser });
+  } catch (error) {
+    //server error
+    next(error);
+  }
+}
+
+export async function getUserController(req, res, next) {
+  try {
+    const { username } = req.body || {};
+
+    const result = await getUser({ username });
+
+    if (result.error) return res.status(400).send({ message: result.message });
+
+    const user = result.data;
+
+    res.status(200).send({ user });
   } catch (error) {
     //server error
     next(error);
