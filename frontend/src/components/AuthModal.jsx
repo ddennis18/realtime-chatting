@@ -7,7 +7,7 @@ const AuthModal = ({ closeSelf }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
   const [fullname, setFullname] = useState("");
-  const { user, setUser } = useUser();
+  const { setUser } = useUser();
 
   const handleSubmit = useCallback(
     async (e) => {
@@ -23,7 +23,6 @@ const AuthModal = ({ closeSelf }) => {
         if (!userData) {
           return;
         }
-        console.log(userData);
         setUser(userData);
       }
     },
@@ -81,7 +80,7 @@ const AuthModal = ({ closeSelf }) => {
             </button>
             <button
               type="submit"
-              className="bg-indigo-700 hover:bg-indigo-600/90  font-semibold text-white p-1 rounded-full"
+              className="bg-indigo-700 hover:bg-indigo-600/90  font-semibold text-white px-2 py-1 rounded-full"
               onClick={handleSubmit}
             >
               {isLogin ? "Login" : "Register"}
