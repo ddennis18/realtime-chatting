@@ -1,9 +1,19 @@
 import express from "express";
-import { createUserController, getUserController } from "../controllers/user-controllers.js";
+import {
+  createUserController,
+  getUserController,
+  loginUserController,
+  logoutUserController,
+  refreshTokenController,
+} from "../controllers/user-controllers.js";
+import { verifyToken } from "../middleware/auth-middleware.js";
 
 const userRouter = express.Router();
 
 userRouter.post("/new", createUserController);
-userRouter.post("/me", getUserController);
+userRouter.get("/me", verifyToken, getUserController);
+userRouter.get("/refresh", refreshTokenController);
+userRouter.post("/login", loginUserController);
+userRouter.post("/logout", logoutUserController);
 
 export default userRouter;

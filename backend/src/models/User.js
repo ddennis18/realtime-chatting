@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema(
   {
     fullname: { type: String, required: true },
     username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
     groups: [{ type: mongoose.SchemaTypes.ObjectId, ref: "group" }],
   },
   { timestamps: true }

@@ -1,9 +1,12 @@
 import express from "express";
 import cors from "cors";
 import apiRouter from "./routes/api-route.js";
+import cookieParser from 'cookie-parser'
+import Group from './models/Group.js'
 
 const app = express();
 
+app.use(cookieParser());
 app.use(express.json())
 app.use(cors());
 
