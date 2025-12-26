@@ -6,7 +6,7 @@ const defaultStyle = "border-slate-500";
 
 const GroupCard = ({ name, _id }) => {
   const { currentGroup, setCurrentGroup } = useChats();
-  const isCurrent = currentGroup._id === _id;
+  const isCurrent = currentGroup?._id === _id;
 
   const handleClick = useCallback(() => {
     setCurrentGroup(_id)
