@@ -78,6 +78,18 @@ const UserProvider = ({ children }) => {
     return result;
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    const result = (await refreshToken()) || {};
+    const { user, accessToken, ok } = result;
+    if (!ok) {
+      return result;
+    }
+
+    setUser(user);
+    setAccessToken(accessToken);
+    return result;
+  }, []);
+
   return (
     <UserContext.Provider
       value={{
@@ -88,6 +100,7 @@ const UserProvider = ({ children }) => {
         login,
         register,
         logout,
+        refreshUser,
       }}
     >
       {children}

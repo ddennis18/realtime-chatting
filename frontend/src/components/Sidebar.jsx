@@ -1,11 +1,18 @@
+import { useState } from "react";
 import { SidebarIcon } from "lucide-react";
 import { useUser } from "../context/UserContext";
 import GroupCard from "./GroupCard";
+import CreateGroupModal from "./CreateGroupModal";
 
 const Sidebar = () => {
-  const { user } = useUser();
+  const { user, refreshUser } = useUser();
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const groups = user?.groups || [];
+
+  const handleGroupCreated = async (newGroup) => {
+    await refreshUser();
+  };
 
   return (
     <div className="hidden md:block max-w-[200px] min-w-[150px] w-full min-h-[300px] bg-indigo-50 p-1">
@@ -20,11 +27,20 @@ const Sidebar = () => {
               return <GroupCard key={g._id} {...g} />;
             })}
           </div>
-          <button className="bg-indigo-700 font-semibold p-1 rounded-lg text-white">
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-indigo-700 font-semibold p-1 rounded-lg text-white hover:bg-indigo-600 transition"
+          >
             Create Group
           </button>
         </div>
       </div>
+      {showCreateModal && (
+        <CreateGroupModal
+          closeSelf={() => setShowCreateModal(false)}
+          onGroupCreated={handleGroupCreated}
+        />
+      )}
     </div>
   );
 };
