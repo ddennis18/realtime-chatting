@@ -73,9 +73,11 @@ export async function checkIsOwner(userId, groupId) {
 }
 
 export async function addGroupMembers(members, groupId) {
+  const session = await startSession();
+  session.startTransaction();
   try {
     if (!isObjectIdOrHexString(groupId)) {
-      return { error: true, message: "Invalid ID" };
+      throw new Error("Invalid ID");
     }
 
     const validMembers = [];
@@ -88,82 +90,120 @@ export async function addGroupMembers(members, groupId) {
       }
     }
 
-    const group = await Group.findById(groupId);
+    const group = await Group.findById(groupId).session(session);
     if (!group) {
-      return { error: true, message: "Group Doesn't Exist" };
+      throw new Error("Group Doesn't Exist");
     }
 
+    const membersToAdd = [];
     validMembers.forEach((m) => {
       if (!group.members.includes(m)) {
         group.members.push(m);
+        membersToAdd.push(m);
       }
     });
 
-    await group.save();
+    await group.save({ session });
 
+    if (membersToAdd.length > 0) {
+      await User.updateMany(
+        { _id: { $in: membersToAdd } },
+        { $addToSet: { groups: groupId } }
+      ).session(session);
+    }
+
+    await session.commitTransaction();
+    session.endSession();
     return { error: false, data: group };
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     console.log("error at addGroupMembers ", error.message);
     return { error: true, message: error.message };
   }
 }
 
 export async function removeGroupMembers(members, groupId) {
+  const session = await startSession();
+  session.startTransaction();
   try {
     if (!isObjectIdOrHexString(groupId)) {
-      return { error: true, message: "Invalid ID" };
+      throw new Error("Invalid ID");
     }
 
-    const group = await Group.findById(groupId);
+    const group = await Group.findById(groupId).session(session);
     if (!group) {
-      return { error: true, message: "Group Doesn't Exist" };
+      throw new Error("Group Doesn't Exist");
     }
 
     members.forEach((m) => {
       group.members.pull(m);
     });
 
-    await group.save();
+    await group.save({ session });
 
+    if (members.length > 0) {
+      await User.updateMany(
+        { _id: { $in: members } },
+        { $pull: { groups: groupId } }
+      ).session(session);
+    }
+
+    await session.commitTransaction();
+    session.endSession();
     return { error: false, data: group };
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     console.log("error at removeGroupMembers ", error.message);
     return { error: true, message: error.message };
   }
 }
 
 export async function changeGroupOwner(newOwnerId, groupId) {
+  const session = await startSession();
+  session.startTransaction();
   try {
     if (!isObjectIdOrHexString(groupId) || !isObjectIdOrHexString(newOwnerId)) {
-      return { error: true, message: "Invalid ID" };
+      throw new Error("Invalid ID");
     }
 
-    const group = await Group.findById(groupId);
+    const group = await Group.findById(groupId).session(session);
     if (!group) {
-      return { error: true, message: "Group Doesn't Exist" };
+      throw new Error("Group Doesn't Exist");
     }
 
-    // Check if new owner exists
     const userResult = await getUserById(newOwnerId);
     if (userResult.error) {
-      return { error: true, message: "New Owner User Doesn't Exist" };
+      throw new Error("New Owner User Doesn't Exist");
     }
+
+    const wasNewOwnerMember = group.members.includes(newOwnerId);
 
     group.owner = newOwnerId;
 
-    // Ensure new owner is in members and admins if you want,
-    // or strict replacement. Usually owner should be a member.
-    if (!group.members.includes(newOwnerId)) {
+    if (!wasNewOwnerMember) {
       group.members.push(newOwnerId);
     }
     if (!group.admins.includes(newOwnerId)) {
       group.admins.push(newOwnerId);
     }
 
-    await group.save();
+    await group.save({ session });
 
+    if (!wasNewOwnerMember) {
+      await User.updateOne(
+        { _id: newOwnerId },
+        { $addToSet: { groups: groupId } }
+      ).session(session);
+    }
+
+    await session.commitTransaction();
+    session.endSession();
     return { error: false, data: group };
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     console.log("error at changeGroupOwner ", error.message);
     return { error: true, message: error.message };
   }
