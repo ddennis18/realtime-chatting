@@ -18,7 +18,7 @@ const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [isSignedIn, setIsSignedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
@@ -34,8 +34,8 @@ const UserProvider = ({ children }) => {
       setAccessToken(accessToken);
     };
 
-    checkLogin();
-    setIsLoading(false);
+    //so that the loading state is set to false after the checkLogin function is done
+    checkLogin().then(() => setIsLoading(false));
   }, []);
 
   const login = useCallback(async ({ username, password }) => {
@@ -87,7 +87,7 @@ const UserProvider = ({ children }) => {
         accessToken,
         login,
         register,
-        logout
+        logout,
       }}
     >
       {children}

@@ -6,6 +6,7 @@ import UserProvider, { useUser } from "./context/UserContext";
 import { useEffect, useState } from "react";
 import AuthModal from "./components/AuthModal";
 import { Toaster } from "react-hot-toast";
+import UserPage from "./components/UserPage";
 
 function App() {
   const user = useUser();
@@ -16,7 +17,14 @@ function App() {
       <Navbar setAuthModal={setIsAuthModalOpen} />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/chat" element={<ChatPage />} />
+        <Route
+          path="/chat"
+          element={
+            <UserPage>
+              <ChatPage />
+            </UserPage>
+          }
+        />
       </Routes>
       {isAuthModalOpen && (
         <AuthModal closeSelf={() => setIsAuthModalOpen(false)} />
