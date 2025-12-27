@@ -46,7 +46,7 @@ export async function getUserByUsername(
       withPassword ? "" : "-password"
     ).populate("groups");
     if (!user) {
-      return { error: true, mesage: "User Doesn't Exist" };
+      return { error: true, message: "User Doesn't Exist" };
     }
     return { error: false, data: user };
   } catch (error) {
