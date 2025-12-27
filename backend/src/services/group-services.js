@@ -5,11 +5,17 @@ import { getUserById } from "./user-services.js";
 
 export async function createGroup({ owner, name, members }) {
   try {
-    const newGroup = Group({ owner, name, members, admins: [owner] });
+    const newGroup = new Group({ owner, name, members, admins: [owner] });
     await newGroup.save();
+
+    await User.updateMany(
+      { _id: { $in: members } },
+      { $addToSet: { groups: newGroup._id } }
+    );
+
     return { error: false, data: newGroup };
   } catch (error) {
-    console.log("error at createGroup ", error.message);
+    console.log("error at createGroup ", error);
     return { error: true, message: error.message };
   }
 }
