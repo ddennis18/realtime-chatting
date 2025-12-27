@@ -31,7 +31,6 @@ const UserProvider = ({ children }) => {
 
       setUser(user);
       setIsSignedIn(true);
-      setGroups(user.groups);
       setAccessToken(accessToken);
     };
 
