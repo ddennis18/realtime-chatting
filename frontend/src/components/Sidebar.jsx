@@ -3,7 +3,9 @@ import { useUser } from "../context/UserContext";
 import GroupCard from "./GroupCard";
 
 const Sidebar = () => {
-  const { groups } = useUser();
+  const { user } = useUser();
+
+  const groups = user?.groups || [];
 
   return (
     <div className="hidden md:block max-w-[200px] min-w-[150px] w-full min-h-[300px] bg-indigo-50 p-1">
