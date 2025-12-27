@@ -1,6 +1,14 @@
 import { MessageCircleCode } from "lucide-react";
+import { useUser } from "../context/UserContext";
 
 const Navbar = ({ setAuthModal }) => {
+  const { isSignedIn, logout } = useUser();
+
+  const handleClick = () => {
+    if (isSignedIn) logout();
+    else setAuthModal((prev) => !prev);
+  };
+
   return (
     <div className="w-full bg-slate-50">
       <header className="mx-auto w-full h-16 max-w-7xl px-6 py-8 flex justify-between items-center">
@@ -14,10 +22,10 @@ const Navbar = ({ setAuthModal }) => {
         </div>
         <div className="space-x-4">
           <button
-            onClick={() => setAuthModal((prev) => !prev)}
+            onClick={handleClick}
             className="p-2 text-white font-semibold bg-indigo-600 hover:bg-indigo-600/80 rounded-lg"
           >
-            Login/Register
+            {isSignedIn ? "Logout" : "Login/Register"}
           </button>
         </div>
       </header>

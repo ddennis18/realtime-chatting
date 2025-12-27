@@ -1,29 +1,94 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import {
+  loginUser,
+  refreshToken,
+  registerUser,
+  logoutUser,
+} from "../services/userService";
 
 const UserContext = createContext();
 
 const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [accessToken, setAccessToken] = useState(null);
   const [isSignedIn, setIsSignedIn] = useState(false);
-  const [groups, setGroups] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!user) {
+    setIsLoading(true);
+
+    const checkLogin = async () => {
+      const { user, accessToken } = (await refreshToken()) || {};
+      if (!user || !accessToken) {
+        return;
+      }
+
+      setUser(user);
+      setIsSignedIn(true);
+      setGroups(user.groups);
+      setAccessToken(accessToken);
+    };
+
+    checkLogin();
+    setIsLoading(false);
+  }, []);
+
+  const login = useCallback(async ({ username, password }) => {
+    const result = (await loginUser({ username, password })) || {};
+    const { user, accessToken, ok } = result;
+    if (!ok) {
       setIsSignedIn(false);
-      return;
+      return result;
     }
+
+    setUser(user);
     setIsSignedIn(true);
-    setGroups(user.groups)
-  }, [user]);
+    setAccessToken(accessToken);
+    return result;
+  }, []);
+
+  const logout = useCallback(async () => {
+    const result = (await logoutUser()) || {};
+    const { ok } = result;
+    if (!ok) {
+      return result;
+    }
+
+    setIsSignedIn(false);
+    return result;
+  }, []);
+
+  const register = useCallback(async ({ username, fullname, password }) => {
+    const result = (await registerUser({ username, fullname, password })) || {};
+    const { user, accessToken, ok } = result;
+    if (!ok) {
+      setIsSignedIn(false);
+      return result;
+    }
+
+    setUser(user);
+    setIsSignedIn(true);
+    setAccessToken(accessToken);
+    setIsSignedIn(true);
+    return result;
+  }, []);
 
   return (
     <UserContext.Provider
       value={{
-        userData: user,
-        setUser,
+        user,
         isSignedIn,
-        groups,
-        setGroups,
+        isLoading,
+        accessToken,
+        login,
+        register,
+        logout
       }}
     >
       {children}

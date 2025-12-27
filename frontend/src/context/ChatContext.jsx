@@ -18,7 +18,8 @@ const ChatProvider = ({ children }) => {
     { message: "Wassup", createdAt: "12/12/34", sender: "user1", _id: 1 },
   ]);
 
-  const { groups } = useUser();
+  const { user, isSignedIn } = useUser();
+  const groups = isSignedIn ? user.groups : [];
 
   const setCurrentGroup = useCallback(
     (id) => {
@@ -31,6 +32,7 @@ const ChatProvider = ({ children }) => {
   );
 
   useEffect(() => {
+    if (!isSignedIn) return;
     setCurrentGroup(groups[0]?._id);
   }, [groups]);
 

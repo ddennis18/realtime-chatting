@@ -1,38 +1,38 @@
 import { useState, useCallback } from "react";
 import { useUser } from "../context/UserContext";
-import { loginUser, registerUser } from "../services/userService.js";
 import { X } from "lucide-react";
+import toaster from 'react-hot-toast'
 
 const AuthModal = ({ closeSelf }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
   const [fullname, setFullname] = useState("");
-  const { setUser } = useUser();
+  const [password, setPassword] = useState("");
+  const { register, login, isSignedIn } = useUser();
 
-  const handleSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      if (!isLogin) {
-        const userData = await registerUser({ username, fullname });
-        if (!userData) {
-          return;
-        }
-        setUser(userData);
-      } else {
-        const userData = await loginUser({ username });
-        if (!userData) {
-          return;
-        }
-        setUser(userData);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isLogin) {
+      const { ok, message } = await login({ username, password });
+      if (!ok) {
+        toaster.error(`Failed to login: ${message}`);
+        return
       }
-    },
-    [isLogin, username, fullname]
-  );
+      toaster.success(`Logged In Successfully`);
+    } else {
+      const { ok, message } = await register({ username, fullname,password });
+      if (!ok) {
+        toaster.error(`Failed to Register: ${message}`);
+        return
+      }
+      toaster.success(`Registered In Successfully`);
+    }
+  };
 
   return (
     <div className="fixed inset-0 w-screen h-screen flex items-center justify-center backdrop-blur-md">
       <div className="relative space-y-2 rounded-lg border border-slate-500 bg-white shadow-2xl w-[80%] md:w-[50%] py-4 px-8">
-        <button onClick={()=>closeSelf()}>
+        <button onClick={() => closeSelf()}>
           <X className="absolute right-[10px] top-[10px] hover:bg-indigo-600/80 transition-all stroke-white bg-indigo-600 p-1 rounded-lg" />
         </button>
         <h3 className="text-center text-2xl text-indigo-600 font-bold">
@@ -55,10 +55,6 @@ const AuthModal = ({ closeSelf }) => {
               />
             </>
           )}
-          <p className="text-xs text-indigo-600/75">
-            This is a test project and it doesnt support proper user auth (yet).
-            Hence Your Username doubles as your password keep it safe{" "}
-          </p>
           <label htmlFor="username" className="font-semibold">
             Enter Your User Name:{" "}
           </label>
@@ -68,6 +64,17 @@ const AuthModal = ({ closeSelf }) => {
             id="username"
             onChange={(e) => setUsername(e.target.value)}
             placeholder="@"
+            className="border-2 border-indigo-600 rounded-full px-2 py-1"
+          />
+          <label htmlFor="password" className="font-semibold">
+            Password:{" "}
+          </label>
+          <input
+            type="password"
+            name="password"
+            id="password"
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder=""
             className="border-2 border-indigo-600 rounded-full px-2 py-1"
           />
           <div className="flex flex-row justify-between">
