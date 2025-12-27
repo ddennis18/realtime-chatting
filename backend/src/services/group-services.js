@@ -79,8 +79,6 @@ export async function checkIsOwner(userId, groupId) {
 }
 
 export async function addGroupMembers(members, groupId) {
-  const session = await startSession();
-  session.startTransaction();
   try {
     if (!isObjectIdOrHexString(groupId)) {
       throw new Error("Invalid ID");
@@ -96,7 +94,7 @@ export async function addGroupMembers(members, groupId) {
       }
     }
 
-    const group = await Group.findById(groupId).session(session);
+    const group = await Group.findById(groupId);
     if (!group) {
       throw new Error("Group Doesn't Exist");
     }
@@ -109,35 +107,29 @@ export async function addGroupMembers(members, groupId) {
       }
     });
 
-    await group.save({ session });
+    await group.save();
 
     if (membersToAdd.length > 0) {
       await User.updateMany(
         { _id: { $in: membersToAdd } },
         { $addToSet: { groups: groupId } }
-      ).session(session);
+      );
     }
 
-    await session.commitTransaction();
-    session.endSession();
     return { error: false, data: group };
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     console.log("error at addGroupMembers ", error.message);
     return { error: true, message: error.message };
   }
 }
 
 export async function removeGroupMembers(members, groupId) {
-  const session = await startSession();
-  session.startTransaction();
   try {
     if (!isObjectIdOrHexString(groupId)) {
       throw new Error("Invalid ID");
     }
 
-    const group = await Group.findById(groupId).session(session);
+    const group = await Group.findById(groupId);
     if (!group) {
       throw new Error("Group Doesn't Exist");
     }
@@ -146,35 +138,29 @@ export async function removeGroupMembers(members, groupId) {
       group.members.pull(m);
     });
 
-    await group.save({ session });
+    await group.save();
 
     if (members.length > 0) {
       await User.updateMany(
         { _id: { $in: members } },
         { $pull: { groups: groupId } }
-      ).session(session);
+      );
     }
 
-    await session.commitTransaction();
-    session.endSession();
     return { error: false, data: group };
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     console.log("error at removeGroupMembers ", error.message);
     return { error: true, message: error.message };
   }
 }
 
 export async function changeGroupOwner(newOwnerId, groupId) {
-  const session = await startSession();
-  session.startTransaction();
   try {
     if (!isObjectIdOrHexString(groupId) || !isObjectIdOrHexString(newOwnerId)) {
       throw new Error("Invalid ID");
     }
 
-    const group = await Group.findById(groupId).session(session);
+    const group = await Group.findById(groupId);
     if (!group) {
       throw new Error("Group Doesn't Exist");
     }
@@ -195,21 +181,17 @@ export async function changeGroupOwner(newOwnerId, groupId) {
       group.admins.push(newOwnerId);
     }
 
-    await group.save({ session });
+    await group.save();
 
     if (!wasNewOwnerMember) {
       await User.updateOne(
         { _id: newOwnerId },
         { $addToSet: { groups: groupId } }
-      ).session(session);
+      );
     }
 
-    await session.commitTransaction();
-    session.endSession();
     return { error: false, data: group };
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     console.log("error at changeGroupOwner ", error.message);
     return { error: true, message: error.message };
   }

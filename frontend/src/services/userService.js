@@ -35,3 +35,16 @@ export async function refreshToken() {
     return { ...error.response.data, ok: false };
   }
 }
+
+export async function searchUsers({ query, accessToken }) {
+  try {
+    const res = await api.get(`/user/search?q=${encodeURIComponent(query)}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return { ...res.data, ok: true };
+  } catch (error) {
+    return { ...error.response.data, ok: false };
+  }
+}

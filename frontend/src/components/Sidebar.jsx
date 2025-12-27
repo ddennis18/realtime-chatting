@@ -1,16 +1,24 @@
 import { useState } from "react";
-import { SidebarIcon } from "lucide-react";
+import { SidebarIcon, UserPlus } from "lucide-react";
 import { useUser } from "../context/UserContext";
+import { useChats } from "../context/ChatContext";
 import GroupCard from "./GroupCard";
 import CreateGroupModal from "./CreateGroupModal";
+import AddMembersModal from "./AddMembersModal";
 
 const Sidebar = () => {
   const { user, refreshUser } = useUser();
+  const { currentGroup } = useChats();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAddMembersModal, setShowAddMembersModal] = useState(false);
 
   const groups = user?.groups || [];
 
   const handleGroupCreated = async (newGroup) => {
+    await refreshUser();
+  };
+
+  const handleMembersAdded = async () => {
     await refreshUser();
   };
 
@@ -27,18 +35,36 @@ const Sidebar = () => {
               return <GroupCard key={g._id} {...g} />;
             })}
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-indigo-700 font-semibold p-1 rounded-lg text-white hover:bg-indigo-600 transition"
-          >
-            Create Group
-          </button>
+          <div className="flex flex-col gap-1 w-full">
+            {currentGroup?._id && (
+              <button
+                onClick={() => setShowAddMembersModal(true)}
+                className="bg-indigo-600 font-semibold p-1 rounded-lg text-white hover:bg-indigo-500 transition flex items-center justify-center gap-1 text-sm"
+              >
+                <UserPlus className="size-4" />
+                Add Members
+              </button>
+            )}
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-indigo-700 font-semibold p-1 rounded-lg text-white hover:bg-indigo-600 transition"
+            >
+              Create Group
+            </button>
+          </div>
         </div>
       </div>
       {showCreateModal && (
         <CreateGroupModal
           closeSelf={() => setShowCreateModal(false)}
           onGroupCreated={handleGroupCreated}
+        />
+      )}
+      {showAddMembersModal && currentGroup?._id && (
+        <AddMembersModal
+          closeSelf={() => setShowAddMembersModal(false)}
+          groupId={currentGroup._id}
+          onMembersAdded={handleMembersAdded}
         />
       )}
     </div>

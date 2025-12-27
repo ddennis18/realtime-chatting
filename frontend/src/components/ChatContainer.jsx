@@ -11,7 +11,6 @@ const ChatContainer = () => {
   const handleSend = (e) => {
     e.preventDefault();
     if (!messageInput.trim()) return;
-
     sendMessage(messageInput);
     setMessageInput("");
   };

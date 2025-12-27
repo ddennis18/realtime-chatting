@@ -2,7 +2,11 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 
-export async function createUser({ username: rawUsername, fullname, password }) {
+export async function createUser({
+  username: rawUsername,
+  fullname,
+  password,
+}) {
   try {
     const username = rawUsername.toLowerCase();
     const newUser = new User({ username, fullname, password });
@@ -65,4 +69,27 @@ export async function generateAccessToken(data) {
   return jwt.sign(data, process.env.JWT_SECRET, {
     expiresIn: "15m",
   });
+}
+
+export async function searchUsers(query) {
+  try {
+    if (!query || query.trim().length === 0) {
+      return { error: false, data: [] };
+    }
+
+    const users = await User.find(
+      {
+        $or: [
+          { username: { $regex: query, $options: "i" } },
+          { fullname: { $regex: query, $options: "i" } },
+        ],
+      },
+      "-password"
+    ).limit(10);
+
+    return { error: false, data: users };
+  } catch (error) {
+    console.log("error at searchUsers ", error);
+    return { error: true, message: error.message };
+  }
 }

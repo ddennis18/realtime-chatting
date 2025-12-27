@@ -6,6 +6,7 @@ import {
   generateRefreshToken,
   getUserById,
   getUserByUsername,
+  searchUsers,
 } from "../services/user-services.js";
 
 export async function createUserController(req, res, next) {
@@ -27,7 +28,7 @@ export async function createUserController(req, res, next) {
     if (result.error) return res.status(400).send({ message: result.message });
 
     const newUser = result.data;
-    newUser.password = undefined
+    newUser.password = undefined;
 
     const refreshToken = await generateRefreshToken({ userId: newUser._id });
 
@@ -83,7 +84,7 @@ export async function loginUserController(req, res, next) {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    user.password = undefined
+    user.password = undefined;
     res.status(201).send({
       message: "User Retrieved Successfuly",
       user,
@@ -103,7 +104,6 @@ export async function refreshTokenController(req, res, next) {
       return res.status(401).send({ ok: false, messsage: "unauthorised" });
     }
 
-
     //verify the token and decode it
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const result = await getUserById(decoded.userId);
@@ -112,7 +112,7 @@ export async function refreshTokenController(req, res, next) {
       return res.status(400).send({ ok: false, messsage: result.message });
     }
 
-    const user = result.data
+    const user = result.data;
 
     const accessToken = await generateAccessToken({ userId: user.id });
 
@@ -153,7 +153,29 @@ export async function getUserController(req, res, next) {
 
     res.status(200).send({ message: "User Retrievd Successfully", user });
   } catch (error) {
-    //server error
+    next(error);
+  }
+}
+
+export async function searchUsersController(req, res, next) {
+  try {
+    const { q } = req.query;
+
+    if (!q) {
+      return res.status(400).send({ message: "Query parameter required" });
+    }
+
+    const result = await searchUsers(q);
+
+    if (result.error) {
+      return res.status(400).send({ message: result.message });
+    }
+
+    res.status(200).send({
+      message: "Users retrieved successfully",
+      users: result.data,
+    });
+  } catch (error) {
     next(error);
   }
 }
