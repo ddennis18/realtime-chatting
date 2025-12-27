@@ -3,7 +3,11 @@ import roomSocket from "./room-socket.js";
 import messageSocket from "./message-socket.js";
 
 export default function setupSockets(server) {
-  const io = createIO(server);
+  const io = createIO(server, {
+    cors: {
+      origin: "http://localhost:5173",
+    },
+  });
 
   io.on("connection", function (socket) {
     console.log("A User Connected", socket.id);

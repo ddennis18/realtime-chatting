@@ -1,18 +1,26 @@
 import express from "express";
 import cors from "cors";
-import apiRouter from "./routes/api-route.js";
-import cookieParser from 'cookie-parser'
-import Group from './models/Group.js'
+import cookieParser from "cookie-parser";
+import userRouter from "./routes/user-route.js";
+import groupRouter from "./routes/group-route.js";
+import messageRouter from "./routes/message-route.js";
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(cookieParser());
-app.use(express.json())
-app.use(cors());
+app.use(express.json());
 
-app.use('/api', apiRouter)
+app.use("/api/user", userRouter);
+app.use("/api/group", groupRouter);
+app.use("/api/message", messageRouter);
 
-//simple 404 middleware
+//404 middleware
 app.use((req, res, next) => {
   res.status(404).json({ message: "Route not found" });
 });
@@ -23,4 +31,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Something went wrong" });
 });
 
-export default app
+export default app;
